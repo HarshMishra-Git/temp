@@ -1,23 +1,29 @@
-import type { Message, InsertMessage, SampleSchema, InsertSchema } from "@shared/schema";
+import type { Message, InsertMessage, SampleSchema, InsertSchema, SavedQuery, InsertSavedQuery } from "@shared/schema";
 
 export interface IStorage {
   getMessages(): Promise<Message[]>;
   addMessage(message: InsertMessage): Promise<Message>;
   getSampleSchemas(): Promise<SampleSchema[]>;
   addSampleSchema(schema: InsertSchema): Promise<SampleSchema>;
+  getSavedQueries(): Promise<SavedQuery[]>;
+  addSavedQuery(query: InsertSavedQuery): Promise<SavedQuery>;
 }
 
 export class MemStorage implements IStorage {
   private messages: Map<number, Message>;
   private schemas: Map<number, SampleSchema>;
+  private queries: Map<number, SavedQuery>;
   private messageId: number;
   private schemaId: number;
+  private queryId: number;
 
   constructor() {
     this.messages = new Map();
     this.schemas = new Map();
+    this.queries = new Map();
     this.messageId = 1;
     this.schemaId = 1;
+    this.queryId = 1;
 
     // Add sample schema
     this.addSampleSchema({
@@ -66,6 +72,18 @@ export class MemStorage implements IStorage {
     const newSchema = { ...schema, id };
     this.schemas.set(id, newSchema);
     return newSchema;
+  }
+
+  async getSavedQueries(): Promise<SavedQuery[]> {
+    return Array.from(this.queries.values());
+  }
+
+  async addSavedQuery(query: InsertSavedQuery): Promise<SavedQuery> {
+    const id = this.queryId++;
+    const timestamp = new Date();
+    const newQuery = { ...query, id, timestamp };
+    this.queries.set(id, newQuery);
+    return newQuery;
   }
 }
 

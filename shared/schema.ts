@@ -15,6 +15,14 @@ export const sampleSchemas = pgTable("sample_schemas", {
   tables: json("tables").notNull()
 });
 
+export const savedQueries = pgTable("saved_queries", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  naturalQuery: text("natural_query").notNull(),
+  sqlQuery: text("sql_query").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull()
+});
+
 export const insertMessageSchema = createInsertSchema(messages).omit({ 
   id: true,
   timestamp: true 
@@ -24,7 +32,14 @@ export const insertSchemaSchema = createInsertSchema(sampleSchemas).omit({
   id: true
 });
 
+export const insertSavedQuerySchema = createInsertSchema(savedQueries).omit({
+  id: true,
+  timestamp: true
+});
+
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type SampleSchema = typeof sampleSchemas.$inferSelect;
 export type InsertSchema = z.infer<typeof insertSchemaSchema>;
+export type SavedQuery = typeof savedQueries.$inferSelect;
+export type InsertSavedQuery = z.infer<typeof insertSavedQuerySchema>;

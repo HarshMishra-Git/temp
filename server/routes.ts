@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
 import { generateSQL, validateSQL } from "./anthropic";
-import { insertMessageSchema } from "@shared/schema";
+import { insertMessageSchema, insertSavedQuerySchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -28,9 +28,25 @@ export async function registerRoutes(app: Express) {
     res.json(schemas);
   });
 
+  app.get("/api/saved-queries", async (_req, res) => {
+    const queries = await storage.getSavedQueries();
+    res.json(queries);
+  });
+
+  app.post("/api/saved-queries", async (req, res) => {
+    const result = insertSavedQuerySchema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ error: "Invalid query format" });
+      return;
+    }
+
+    const query = await storage.addSavedQuery(result.data);
+    res.json(query);
+  });
+
   app.post("/api/generate", async (req, res) => {
     const { prompt, schema, context } = req.body;
-    
+
     if (!prompt || !schema) {
       res.status(400).json({ error: "Missing prompt or schema" });
       return;
@@ -39,14 +55,14 @@ export async function registerRoutes(app: Express) {
     try {
       const sql = await generateSQL(prompt, schema, context);
       res.json({ sql });
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
   app.post("/api/validate", async (req, res) => {
     const { sql, schema } = req.body;
-    
+
     if (!sql || !schema) {
       res.status(400).json({ error: "Missing SQL query or schema" });
       return;
@@ -55,7 +71,7 @@ export async function registerRoutes(app: Express) {
     try {
       const result = await validateSQL(sql, schema);
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
