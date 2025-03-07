@@ -101,6 +101,7 @@ export default function Home() {
         title: "Success",
         description: "Query saved successfully",
       });
+      setQueryName(""); // Clear the query name after successful save
       setSaveDialogOpen(false);
     },
     onError: (error: Error) => {
@@ -123,13 +124,29 @@ export default function Home() {
 
   const handleSaveQuery = () => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage && currentSQL) {
-      saveQueryMutation.mutate({
-        name: queryName,
-        naturalQuery: lastMessage.content,
-        sqlQuery: currentSQL
+    if (!lastMessage || !currentSQL) {
+      toast({
+        title: "Error",
+        description: "No query to save",
+        variant: "destructive"
       });
+      return;
     }
+
+    if (!queryName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a query name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    saveQueryMutation.mutate({
+      name: queryName.trim(),
+      naturalQuery: lastMessage.content,
+      sqlQuery: currentSQL
+    });
   };
 
   const handleQuerySelect = (query: SavedQuery) => {

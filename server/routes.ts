@@ -36,12 +36,22 @@ export async function registerRoutes(app: Express) {
   app.post("/api/saved-queries", async (req, res) => {
     const result = insertSavedQuerySchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: "Invalid query format" });
+      res.status(400).json({ 
+        error: "Invalid query format",
+        details: result.error.errors
+      });
       return;
     }
 
-    const query = await storage.addSavedQuery(result.data);
-    res.json(query);
+    try {
+      const query = await storage.addSavedQuery(result.data);
+      res.json(query);
+    } catch (error: any) {
+      res.status(500).json({ 
+        error: "Failed to save query",
+        message: error.message 
+      });
+    }
   });
 
   app.post("/api/generate", async (req, res) => {
