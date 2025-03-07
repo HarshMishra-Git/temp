@@ -26,6 +26,7 @@ export default function Home() {
   const [currentSQL, setCurrentSQL] = useState("");
   const [queryName, setQueryName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [lastNaturalQuery, setLastNaturalQuery] = useState("");
   const { toast } = useToast();
 
   const { data: messages = [] } = useQuery<Message[]>({
@@ -101,7 +102,7 @@ export default function Home() {
         title: "Success",
         description: "Query saved successfully",
       });
-      setQueryName(""); // Clear the query name after successful save
+      setQueryName(""); 
       setSaveDialogOpen(false);
     },
     onError: (error: Error) => {
@@ -115,6 +116,7 @@ export default function Home() {
 
   const handleSend = async (message: string) => {
     try {
+      setLastNaturalQuery(message); 
       await messageMutation.mutateAsync(message);
       await generateMutation.mutateAsync(message);
     } catch (error) {
@@ -123,11 +125,10 @@ export default function Home() {
   };
 
   const handleSaveQuery = () => {
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || !currentSQL) {
+    if (!currentSQL || !lastNaturalQuery) {
       toast({
         title: "Error",
-        description: "No query to save",
+        description: "Please generate a SQL query first",
         variant: "destructive"
       });
       return;
@@ -144,7 +145,7 @@ export default function Home() {
 
     saveQueryMutation.mutate({
       name: queryName.trim(),
-      naturalQuery: lastMessage.content,
+      naturalQuery: lastNaturalQuery,
       sqlQuery: currentSQL
     });
   };
@@ -205,7 +206,17 @@ export default function Home() {
           <SQLEditor 
             value={currentSQL}
             readOnly
-            onSave={() => setSaveDialogOpen(true)}
+            onSave={() => {
+              if (!currentSQL || !lastNaturalQuery) {
+                toast({
+                  title: "Error",
+                  description: "Please generate a SQL query first",
+                  variant: "destructive"
+                });
+                return;
+              }
+              setSaveDialogOpen(true);
+            }}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -223,7 +234,7 @@ export default function Home() {
             />
             <Button 
               onClick={handleSaveQuery}
-              disabled={!queryName || saveQueryMutation.isPending}
+              disabled={!queryName.trim() || saveQueryMutation.isPending}
             >
               Save
             </Button>
