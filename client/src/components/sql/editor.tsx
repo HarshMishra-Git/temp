@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 import { basicSetup } from "codemirror";
 import { EditorView, ViewUpdate } from "@codemirror/view";
 import { sql } from "@codemirror/lang-sql";
@@ -49,7 +49,7 @@ export function SQLEditor({ value, onChange, readOnly = false, onSave }: SQLEdit
     return () => {
       view.destroy();
     };
-  }, [readOnly]);
+  }, [readOnly, onChange]);
 
   useEffect(() => {
     if (viewRef.current && value !== viewRef.current.state.doc.toString()) {

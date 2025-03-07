@@ -13,9 +13,11 @@ const SUPPORTED_LANGUAGES = [
   { value: "javascript", label: "JavaScript" },
   { value: "typescript", label: "TypeScript" },
   { value: "java", label: "Java" },
-];
+] as const;
 
-const FRAMEWORKS = {
+type Language = typeof SUPPORTED_LANGUAGES[number]['value'];
+
+const FRAMEWORKS: Record<Language, string[]> = {
   python: ["Django", "Flask", "SQLAlchemy"],
   javascript: ["Node.js", "Express", "Prisma"],
   typescript: ["TypeORM", "Prisma", "Drizzle"],
@@ -27,7 +29,7 @@ interface CodeSnippetProps {
 }
 
 export function CodeSnippet({ sql }: CodeSnippetProps) {
-  const [language, setLanguage] = useState(SUPPORTED_LANGUAGES[0].value);
+  const [language, setLanguage] = useState<Language>(SUPPORTED_LANGUAGES[0].value);
   const [framework, setFramework] = useState(FRAMEWORKS[language][0]);
   const [snippet, setSnippet] = useState("");
   const { toast } = useToast();
@@ -77,7 +79,7 @@ export function CodeSnippet({ sql }: CodeSnippetProps) {
       <CardContent>
         <div className="space-y-4">
           <div className="flex gap-4">
-            <Select value={language} onValueChange={setLanguage}>
+            <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
