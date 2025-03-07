@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,7 +7,12 @@ import { ChatInput } from "@/components/chat/input";
 import { SQLEditor } from "@/components/sql/editor";
 import { QueryHistory } from "@/components/sql/query-history";
 import { VisualBuilder } from "@/components/sql/visual-builder";
+import { SchemaVisualizer } from "@/components/sql/schema-visualizer";
+import { QuerySuggestions } from "@/components/sql/query-suggestions";
+import { QueryRating } from "@/components/feedback/query-rating";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Message, SampleSchema, SavedQuery } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -17,18 +22,30 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+
+const KEYBOARD_SHORTCUTS = {
+  'Ctrl+ENTER': { handler: () => {}, description: 'Send query' },
+  'Ctrl+S': { handler: () => {}, description: 'Save query' },
+  'Ctrl+K': { handler: () => {}, description: 'Focus chat input' },
+  'Ctrl+L': { handler: () => {}, description: 'Clear chat' },
+  'Ctrl+D': { handler: () => {}, description: 'Toggle theme' },
+};
 
 export default function Home() {
   const [currentSQL, setCurrentSQL] = useState("");
   const [queryName, setQueryName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [lastNaturalQuery, setLastNaturalQuery] = useState("");
+  const [selectedTable, setSelectedTable] = useState("");
   const { toast } = useToast();
 
+  const shortcuts = useKeyboardShortcuts(KEYBOARD_SHORTCUTS);
+
+  // Queries
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ["/api/messages"]
   });
@@ -37,6 +54,7 @@ export default function Home() {
     queryKey: ["/api/schemas"]
   });
 
+  // Mutations
   const generateMutation = useMutation({
     mutationFn: async (prompt: string) => {
       const context = messages.map(m => m.content);
@@ -155,71 +173,135 @@ export default function Home() {
     handleSend(query.naturalQuery);
   };
 
+  const handleTableClick = useCallback((tableName: string) => {
+    setSelectedTable(tableName);
+    handleSend(`Show me all columns from ${tableName}`);
+  }, []);
+
   return (
-    <div className="h-screen p-4 bg-background">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">SQL Query Generator</h1>
-        <ThemeToggle />
-      </div>
+    <div className="min-h-screen bg-background">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 border-b"
+      >
+        <div className="max-w-[1400px] mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            SQL Query Generator
+          </h1>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+          </div>
+        </div>
+      </motion.div>
 
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={30}>
-          <Tabs defaultValue="chat">
-            <TabsList>
-              <TabsTrigger value="chat">Chat</TabsTrigger>
-              <TabsTrigger value="visual">Visual Builder</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-            </TabsList>
+      <main className="max-w-[1400px] mx-auto p-4">
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={30}>
+            <Tabs defaultValue="chat" className="h-[calc(100vh-200px)]">
+              <TabsList className="w-full">
+                <TabsTrigger value="chat">Chat</TabsTrigger>
+                <TabsTrigger value="visual">Visual Builder</TabsTrigger>
+                <TabsTrigger value="schema">Schema</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="chat" className="h-[calc(100vh-180px)]">
-              <div className="h-full flex flex-col">
-                <ScrollArea className="flex-1 pr-4">
-                  {messages.map((message) => (
-                    <ChatMessage key={message.id} message={message} />
-                  ))}
-                </ScrollArea>
-                <div className="pt-4">
-                  <ChatInput 
-                    onSend={handleSend}
-                    disabled={generateMutation.isPending || messageMutation.isPending}
-                  />
+              <TabsContent value="chat" className="h-full">
+                <div className="h-full flex flex-col">
+                  <ScrollArea className="flex-1 pr-4">
+                    <AnimatePresence>
+                      {messages.map((message) => (
+                        <motion.div
+                          key={message.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                        >
+                          <ChatMessage message={message} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                    {(generateMutation.isPending || messageMutation.isPending) && (
+                      <LoadingSpinner
+                        message="Generating SQL query..."
+                        className="my-4"
+                      />
+                    )}
+                  </ScrollArea>
+                  <div className="pt-4">
+                    <ChatInput 
+                      onSend={handleSend}
+                      disabled={generateMutation.isPending || messageMutation.isPending}
+                    />
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="visual">
-              {schemas[0] && (
-                <VisualBuilder 
-                  schema={schemas[0]} 
-                  onGenerate={handleSend}
+              <TabsContent value="visual">
+                {schemas[0] && (
+                  <VisualBuilder 
+                    schema={schemas[0]} 
+                    onGenerate={handleSend}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="schema">
+                {schemas[0] && (
+                  <SchemaVisualizer
+                    schema={schemas[0]}
+                    onTableClick={handleTableClick}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="history">
+                <QueryHistory onSelect={handleQuerySelect} />
+              </TabsContent>
+            </Tabs>
+          </ResizablePanel>
+
+          <ResizablePanel defaultSize={70}>
+            <div className="space-y-4">
+              <SQLEditor 
+                value={currentSQL}
+                readOnly
+                onSave={() => {
+                  if (!currentSQL || !lastNaturalQuery) {
+                    toast({
+                      title: "Error",
+                      description: "Please generate a SQL query first",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  setSaveDialogOpen(true);
+                }}
+              />
+
+              {currentSQL && (
+                <QueryRating
+                  onSubmit={(rating, feedback) => {
+                    toast({
+                      title: "Thank you!",
+                      description: "Your feedback has been recorded.",
+                    });
+                  }}
                 />
               )}
-            </TabsContent>
 
-            <TabsContent value="history">
-              <QueryHistory onSelect={handleQuerySelect} />
-            </TabsContent>
-          </Tabs>
-        </ResizablePanel>
-
-        <ResizablePanel defaultSize={70}>
-          <SQLEditor 
-            value={currentSQL}
-            readOnly
-            onSave={() => {
-              if (!currentSQL || !lastNaturalQuery) {
-                toast({
-                  title: "Error",
-                  description: "Please generate a SQL query first",
-                  variant: "destructive"
-                });
-                return;
-              }
-              setSaveDialogOpen(true);
-            }}
-          />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+              <QuerySuggestions
+                suggestions={[
+                  { naturalQuery: "Show all orders from last month", context: "Time-based query" },
+                  { naturalQuery: "Find top 5 products by price", context: "Aggregation" },
+                  { naturalQuery: "List customers with pending orders", context: "Joins" },
+                ]}
+                onSelect={(suggestion) => handleSend(suggestion.naturalQuery)}
+              />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </main>
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>

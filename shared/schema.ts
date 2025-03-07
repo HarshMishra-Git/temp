@@ -1,4 +1,4 @@
-import { pgTable, text, serial, json, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, json, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -20,6 +20,15 @@ export const savedQueries = pgTable("saved_queries", {
   name: text("name").notNull(),
   naturalQuery: text("natural_query").notNull(),
   sqlQuery: text("sql_query").notNull(),
+  rating: integer("rating"),
+  feedback: text("feedback"),
+  timestamp: timestamp("timestamp").defaultNow().notNull()
+});
+
+export const querySuggestions = pgTable("query_suggestions", {
+  id: serial("id").primaryKey(),
+  naturalQuery: text("natural_query").notNull(),
+  context: text("context").notNull(),
   timestamp: timestamp("timestamp").defaultNow().notNull()
 });
 
@@ -34,6 +43,13 @@ export const insertSchemaSchema = createInsertSchema(sampleSchemas).omit({
 
 export const insertSavedQuerySchema = createInsertSchema(savedQueries).omit({
   id: true,
+  timestamp: true,
+  rating: true,
+  feedback: true
+});
+
+export const insertQuerySuggestionSchema = createInsertSchema(querySuggestions).omit({
+  id: true,
   timestamp: true
 });
 
@@ -43,3 +59,5 @@ export type SampleSchema = typeof sampleSchemas.$inferSelect;
 export type InsertSchema = z.infer<typeof insertSchemaSchema>;
 export type SavedQuery = typeof savedQueries.$inferSelect;
 export type InsertSavedQuery = z.infer<typeof insertSavedQuerySchema>;
+export type QuerySuggestion = typeof querySuggestions.$inferSelect;
+export type InsertQuerySuggestion = z.infer<typeof insertQuerySuggestionSchema>;
