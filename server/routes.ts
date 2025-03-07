@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { generateSQL, validateSQL, generateQueryTemplate } from "./anthropic";
+import { generateSQL, validateSQL, generateQueryTemplate, generateCodeSnippet } from "./anthropic";
 import { 
   insertMessageSchema, 
   insertSavedQuerySchema,
