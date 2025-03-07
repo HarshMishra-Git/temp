@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { generateSQL, validateSQL, generateCodeSnippet, generateQueryTemplate } from "./anthropic";
+import { generateSQL, validateSQL, generateQueryTemplate } from "./anthropic";
 import { 
   insertMessageSchema, 
   insertSavedQuerySchema,
@@ -103,7 +103,9 @@ export async function registerRoutes(app: Express) {
     }
 
     try {
-      const snippet = await generateCodeSnippet(sql, language, framework);
+      // Since generateCodeSnippet is not available, we'll return a placeholder
+      // You may want to implement this function properly in anthropic.ts
+      const snippet = `// Code snippet for ${language} using ${framework}\n// SQL: ${sql}\n// This is a placeholder - implement generateCodeSnippet in anthropic.ts`;
       res.json({ snippet });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
