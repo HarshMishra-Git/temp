@@ -12,7 +12,7 @@ export async function generateSQL(
 ): Promise<string> {
   const schemaStr = JSON.stringify(schema, null, 2);
   const contextStr = context.join("\n");
-  
+
   const systemPrompt = `You are an expert SQL query generator. Given a database schema and natural language query, generate the corresponding SQL query. Only return the SQL query without any explanation.
 
 Schema:
@@ -27,16 +27,18 @@ ${contextStr}`;
       max_tokens: 1024,
       messages: [
         { 
-          role: "user", 
+          role: 'user', 
           content: prompt
         }
       ],
       system: systemPrompt
     });
 
-    return response.content[0].text;
-  } catch (error) {
-    throw new Error(`Failed to generate SQL: ${error.message}`);
+    // Fix: Use content[0].value instead of content[0].text
+    return response.content[0].value;
+  } catch (error: any) {
+    console.error('Anthropic API Error:', error);
+    throw new Error(`Failed to generate SQL: ${error?.message || 'Unknown error'}`);
   }
 }
 
@@ -45,7 +47,7 @@ export async function validateSQL(
   schema: Record<string, any>
 ): Promise<{ isValid: boolean; error?: string }> {
   const schemaStr = JSON.stringify(schema, null, 2);
-  
+
   const systemPrompt = `You are an expert SQL validator. Given a database schema and SQL query, validate if the query is correct and would execute successfully. Return a JSON response with "isValid" boolean and optional "error" string.
 
 Schema:
@@ -64,11 +66,13 @@ ${schemaStr}`;
       system: systemPrompt
     });
 
-    return JSON.parse(response.content[0].text);
-  } catch (error) {
+    // Fix: Use content[0].value instead of content[0].text
+    return JSON.parse(response.content[0].value);
+  } catch (error: any) {
+    console.error('Anthropic API Error:', error);
     return {
       isValid: false,
-      error: `Failed to validate SQL: ${error.message}`
+      error: `Failed to validate SQL: ${error?.message || 'Unknown error'}`
     };
   }
 }
