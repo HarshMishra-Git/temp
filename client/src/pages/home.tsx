@@ -26,6 +26,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { CodeSnippet } from "@/components/sql/code-snippet";
+import { QueryPerformance } from "@/components/sql/query-performance";
+import { Download } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const KEYBOARD_SHORTCUTS = {
   'Ctrl+ENTER': { handler: () => {}, description: 'Send query' },
@@ -120,7 +129,7 @@ export default function Home() {
         title: "Success",
         description: "Query saved successfully",
       });
-      setQueryName(""); 
+      setQueryName("");
       setSaveDialogOpen(false);
     },
     onError: (error: Error) => {
@@ -132,9 +141,41 @@ export default function Home() {
     }
   });
 
+  const exportMutation = useMutation({
+    mutationFn: async ({ format, data }: { format: string; data: any }) => {
+      const res = await apiRequest("POST", "/api/export", { format, data });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      // Create and trigger download
+      const blob = new Blob([data], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `query-results.${data.format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "Query results exported successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Export Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+
   const handleSend = async (message: string) => {
     try {
-      setLastNaturalQuery(message); 
+      setLastNaturalQuery(message);
       await messageMutation.mutateAsync(message);
       await generateMutation.mutateAsync(message);
     } catch (error) {
@@ -180,7 +221,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-4 border-b"
@@ -229,7 +270,7 @@ export default function Home() {
                     )}
                   </ScrollArea>
                   <div className="pt-4">
-                    <ChatInput 
+                    <ChatInput
                       onSend={handleSend}
                       disabled={generateMutation.isPending || messageMutation.isPending}
                     />
@@ -239,8 +280,8 @@ export default function Home() {
 
               <TabsContent value="visual">
                 {schemas[0] && (
-                  <VisualBuilder 
-                    schema={schemas[0]} 
+                  <VisualBuilder
+                    schema={schemas[0]}
                     onGenerate={handleSend}
                   />
                 )}
@@ -263,7 +304,32 @@ export default function Home() {
 
           <ResizablePanel defaultSize={70}>
             <div className="space-y-4">
-              <SQLEditor 
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Generated SQL</h2>
+                {currentSQL && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => exportMutation.mutate({ format: "csv", data: currentSQL })}>
+                        Export as CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportMutation.mutate({ format: "json", data: currentSQL })}>
+                        Export as JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportMutation.mutate({ format: "sql", data: currentSQL })}>
+                        Export as SQL
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+
+              <SQLEditor
                 value={currentSQL}
                 readOnly
                 onSave={() => {
@@ -280,24 +346,14 @@ export default function Home() {
               />
 
               {currentSQL && (
-                <QueryRating
-                  onSubmit={(rating, feedback) => {
-                    toast({
-                      title: "Thank you!",
-                      description: "Your feedback has been recorded.",
-                    });
-                  }}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <QueryPerformance
+                    performance={generateMutation.data?.performance || {}}
+                    improvements={generateMutation.data?.improvements || []}
+                  />
+                  <CodeSnippet sql={currentSQL} />
+                </div>
               )}
-
-              <QuerySuggestions
-                suggestions={[
-                  { naturalQuery: "Show all orders from last month", context: "Time-based query" },
-                  { naturalQuery: "Find top 5 products by price", context: "Aggregation" },
-                  { naturalQuery: "List customers with pending orders", context: "Joins" },
-                ]}
-                onSelect={(suggestion) => handleSend(suggestion.naturalQuery)}
-              />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -314,7 +370,7 @@ export default function Home() {
               value={queryName}
               onChange={(e) => setQueryName(e.target.value)}
             />
-            <Button 
+            <Button
               onClick={handleSaveQuery}
               disabled={!queryName.trim() || saveQueryMutation.isPending}
             >
