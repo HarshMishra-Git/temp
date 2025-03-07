@@ -34,8 +34,7 @@ ${contextStr}`;
       system: systemPrompt
     });
 
-    // Fix: Use content[0].value instead of content[0].text
-    return response.content[0].value;
+    return response.content[0].text;
   } catch (error: any) {
     console.error('Anthropic API Error:', error);
     throw new Error(`Failed to generate SQL: ${error?.message || 'Unknown error'}`);
@@ -66,8 +65,7 @@ ${schemaStr}`;
       system: systemPrompt
     });
 
-    // Fix: Use content[0].value instead of content[0].text
-    return JSON.parse(response.content[0].value);
+    return JSON.parse(response.content[0].text);
   } catch (error: any) {
     console.error('Anthropic API Error:', error);
     return {

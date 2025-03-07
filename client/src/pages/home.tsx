@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const [currentSQL, setCurrentSQL] = useState("");
   const { toast } = useToast();
-  
+
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ["/api/messages"]
   });
@@ -25,21 +25,33 @@ export default function Home() {
     mutationFn: async (prompt: string) => {
       const context = messages.map(m => m.content);
       const schema = schemas[0]?.tables; // Using first schema for simplicity
-      
+
+      if (!schema) {
+        throw new Error("No schema available");
+      }
+
       const res = await apiRequest("POST", "/api/generate", {
         prompt,
         schema,
         context
       });
-      
-      return res.json();
+
+      const data = await res.json();
+      if (!data.sql) {
+        throw new Error("No SQL generated");
+      }
+      return data;
     },
     onSuccess: (data) => {
       setCurrentSQL(data.sql);
-    },
-    onError: (error) => {
       toast({
-        title: "Error",
+        title: "Success",
+        description: "SQL query generated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Generating SQL",
         description: error.message,
         variant: "destructive"
       });
@@ -53,12 +65,23 @@ export default function Home() {
         content
       });
       return res.json();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Saving Message",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
   const handleSend = async (message: string) => {
-    await messageMutation.mutateAsync(message);
-    await generateMutation.mutateAsync(message);
+    try {
+      await messageMutation.mutateAsync(message);
+      await generateMutation.mutateAsync(message);
+    } catch (error) {
+      console.error("Failed to process message:", error);
+    }
   };
 
   return (
