@@ -1,5 +1,5 @@
 
-import Anthropic from '@anthropic/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import { env } from "./env";
 
 const anthropic = new Anthropic({
