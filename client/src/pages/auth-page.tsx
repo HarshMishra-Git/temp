@@ -87,7 +87,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen w-full py-12 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-      <div className="container grid flex-1 gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-20 items-center">
+      <div className="container mx-auto max-w-7xl grid flex-1 gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-20 items-center">
         <div className="space-y-6 lg:col-span-2">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">

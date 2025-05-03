@@ -14,7 +14,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-30 border-b">
-        <div className="container flex items-center justify-between">
+        <div className="container mx-auto max-w-7xl flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <Rocket className="h-6 w-6 text-primary" />
             <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -54,7 +54,7 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="w-full py-24 md:py-32 lg:py-40 border-b">
-          <div className="container space-y-10 md:space-y-16 px-4 md:px-6">
+          <div className="container mx-auto max-w-7xl space-y-10 md:space-y-16 px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -113,7 +113,7 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="w-full py-12 md:py-24 lg:py-32 border-b" id="features">
-          <div className="container space-y-12 px-4 md:px-6">
+          <div className="container mx-auto max-w-7xl space-y-12 px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -288,7 +288,7 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="w-full py-12 md:py-24 lg:py-32 border-b bg-slate-50 dark:bg-slate-900" id="about">
-          <div className="container grid items-center gap-6 md:gap-12 px-4 md:px-6 lg:grid-cols-2">
+          <div className="container mx-auto max-w-7xl grid items-center gap-6 md:gap-12 px-4 md:px-6 lg:grid-cols-2">
             <div className="space-y-4">
               <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                 About the Project
@@ -351,7 +351,7 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="w-full py-12 md:py-24 lg:py-32" id="technology">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto max-w-7xl px-4 md:px-6">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-8">
               <div className="space-y-4">
                 <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -536,7 +536,7 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="w-full py-12 md:py-24 lg:py-32 border-t bg-slate-50 dark:bg-slate-900">
-          <div className="container grid items-center gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-10">
+          <div className="container mx-auto max-w-7xl grid items-center gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-10">
             <div className="space-y-2">
               <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                 Get Started
@@ -560,7 +560,7 @@ export default function LandingPage() {
         </section>
       </main>
       <footer className="w-full border-t py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row px-4 md:px-6">
+        <div className="container mx-auto max-w-7xl flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Rocket className="h-6 w-6 text-primary" />
             <p className="text-sm text-gray-500 dark:text-gray-400">
