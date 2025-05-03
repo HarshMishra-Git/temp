@@ -12,19 +12,30 @@ async function seed() {
       where: (users) => eq(users.username, "admin")
     });
     
-    // Create default user if none exists
+    // Create default users if none exist
     if (!existingUser) {
       console.log("Creating default admin user...");
-      const userData = insertUserSchema.parse({
+      const adminUserData = insertUserSchema.parse({
         username: "admin",
         password: "$2b$10$8DmI1qQHL7JbnUa.BrGVPe2IfaApjhPB2jg3zKFcUzMfX9DSNv2eq", // hashed "password123"
         name: "Alex Torres",
         role: "admin",
         profileImage: "https://images.unsplash.com/photo-1553373875-200e034084af?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
       });
-      const [user] = await db.insert(users).values(userData).returning();
+      const [adminUser] = await db.insert(users).values(adminUserData).returning();
+      console.log(`Created admin user with ID: ${adminUser.id}`);
       
-      console.log(`Created user with ID: ${user.id}`);
+      // Create an engineer user too
+      console.log("Creating engineer user...");
+      const engineerUserData = insertUserSchema.parse({
+        username: "engineer",
+        password: "$2b$10$8DmI1qQHL7JbnUa.BrGVPe2IfaApjhPB2jg3zKFcUzMfX9DSNv2eq", // hashed "password123"
+        name: "Maria Johnson",
+        role: "engineer",
+        profileImage: null
+      });
+      const [engineerUser] = await db.insert(users).values(engineerUserData).returning();
+      console.log(`Created engineer user with ID: ${engineerUser.id}`);
     }
     
     // Add sample model metrics if none exist
@@ -68,7 +79,12 @@ async function seed() {
           "oxygen_tank_unusual_angle.jpg"
         ]
       });
-      await db.insert(modelMetrics).values(metricsData);
+      await db.insert(modelMetrics).values({
+        overallMAP: metricsData.overallMAP,
+        classMetrics: metricsData.classMetrics as any,
+        confusionMatrix: metricsData.confusionMatrix as any,
+        failureCases: metricsData.failureCases as any
+      });
     }
     
     // Add sample activity logs if none exist
