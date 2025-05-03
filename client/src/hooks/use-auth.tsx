@@ -25,6 +25,7 @@ type LoginData = {
 type RegisterData = {
   username: string;
   password: string;
+  confirmPassword?: string;
   name: string;
   role?: "engineer" | "admin";
 };
@@ -70,8 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterData) => {
-      const parsedCredentials = registerSchema.parse(credentials);
-      const res = await apiRequest("POST", "/api/register", parsedCredentials);
+      // Validate with the schema first (which includes confirmPassword validation)
+      registerSchema.parse(credentials);
+      
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...userDataToSend } = credentials;
+      
+      const res = await apiRequest("POST", "/api/register", userDataToSend);
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Registration failed");
