@@ -31,8 +31,12 @@ export const storage = {
   // Detection results operations
   insertDetectionResult: async (data: Omit<InsertDetectionResult, "timestamp">) => {
     try {
+      // Ensure the detections field is properly formatted as an array
+      const detectionArray = Array.isArray(data.detections) ? data.detections : [];
+      
       const validatedData = insertDetectionResultSchema.parse({
         ...data,
+        detections: detectionArray,
         timestamp: new Date()
       });
       
@@ -68,8 +72,18 @@ export const storage = {
   // Model metrics operations
   insertModelMetrics: async (data: Omit<InsertModelMetric, "timestamp">) => {
     try {
+      // Ensure the classMetrics field is properly formatted as an array
+      const classMetricsArray = Array.isArray(data.classMetrics) ? data.classMetrics : [];
+      // Ensure the confusionMatrix field is properly formatted as an array
+      const confusionMatrixArray = Array.isArray(data.confusionMatrix) ? data.confusionMatrix : [];
+      // Ensure the failureCases field is properly formatted as an array
+      const failureCasesArray = Array.isArray(data.failureCases) ? data.failureCases : [];
+      
       const validatedData = insertModelMetricsSchema.parse({
         ...data,
+        classMetrics: classMetricsArray,
+        confusionMatrix: confusionMatrixArray,
+        failureCases: failureCasesArray,
         timestamp: new Date()
       });
       
