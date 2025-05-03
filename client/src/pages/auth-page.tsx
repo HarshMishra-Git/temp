@@ -75,23 +75,37 @@ export default function AuthPage() {
   };
 
   const onRegisterSubmit = async (values: RegisterValues) => {
-    if (!values.confirmPassword) {
-      registerForm.setError("confirmPassword", {
-        type: "required",
-        message: "Please confirm your password"
+    try {
+      // Validate all required fields
+      if (!values.username || !values.password || !values.name || !values.confirmPassword) {
+        Object.keys(values).forEach(key => {
+          if (!values[key as keyof RegisterValues]) {
+            registerForm.setError(key as keyof RegisterValues, {
+              type: "required",
+              message: "This field is required"
+            });
+          }
+        });
+        return;
+      }
+
+      if (values.password !== values.confirmPassword) {
+        registerForm.setError("confirmPassword", {
+          type: "validate",
+          message: "Passwords don't match"
+        });
+        return;
+      }
+
+      await registerMutation.mutateAsync(values);
+      setActiveTab("login"); // Switch to login tab after successful registration
+    } catch (error) {
+      console.error("Registration error:", error);
+      registerForm.setError("root", {
+        type: "submit",
+        message: error instanceof Error ? error.message : "Registration failed"
       });
-      return;
     }
-    if (values.password !== values.confirmPassword) {
-      registerForm.setError("confirmPassword", {
-        type: "validate",
-        message: "Passwords don't match"
-      });
-      return;
-    }
-    // Remove confirmPassword before sending to API
-    const { confirmPassword, ...registerData } = values;
-    registerMutation.mutate(registerData);
   };
 
   // If user is already logged in, redirect to dashboard

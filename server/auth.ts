@@ -71,7 +71,13 @@ export function setupAuth(app: Express) {
 
   app.post('/api/register', async (req, res, next) => {
     try {
-      // Remove confirmPassword from the request body
+      if (!req.body.username || !req.body.password || !req.body.name) {
+        return res.status(400).json({ 
+          message: 'All fields are required',
+          code: 'invalid_input'
+        });
+      }
+      
       const { confirmPassword, ...userData } = req.body;
       
       const existingUser = await storage.getUserByUsername(userData.username);

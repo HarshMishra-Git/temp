@@ -71,13 +71,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterData) => {
-      // Validate with the schema first (which includes confirmPassword validation)
-      registerSchema.parse(credentials);
-      
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...userDataToSend } = credentials;
-      
-      const res = await apiRequest("POST", "/api/register", userDataToSend);
+      try {
+        // Validate with the schema first
+        registerSchema.parse(credentials);
+        
+        // Remove confirmPassword before sending to API
+        const { confirmPassword, ...userDataToSend } = credentials;
+        
+        const res = await apiRequest("POST", "/api/register", userDataToSend);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Registration failed');
+        }
+        return await res.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Registration failed');
+      }
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Registration failed");
