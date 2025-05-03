@@ -12,7 +12,17 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative overflow-hidden">
+      {/* Background animations */}
+      <div className="blob fixed top-[-200px] right-[-100px]"></div>
+      <div className="blob-small fixed top-[-100px] left-[20%]"></div>
+      <div className="sparkle fixed top-[15%] left-[10%]"></div>
+      <div className="sparkle fixed top-[25%] right-[15%]"></div>
+      <div className="sparkle fixed top-[40%] left-[30%]"></div>
+      <div className="sparkle fixed bottom-[20%] right-[25%]"></div>
+      <div className="meteor fixed top-0 left-[20%]"></div>
+      <div className="meteor fixed top-[10%] right-[30%]"></div>
+      
       <header className="px-4 lg:px-6 h-16 flex items-center sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-30 border-b">
         <div className="container mx-auto max-w-7xl flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -22,15 +32,15 @@ export default function LandingPage() {
             </span>
           </Link>
           <nav className="hidden md:flex gap-6">
-            <Link to="/#features" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               Features
-            </Link>
-            <Link to="/#about" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            </a>
+            <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               About
-            </Link>
-            <Link to="/#technology" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            </a>
+            <a href="#technology" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               Technology
-            </Link>
+            </a>
           </nav>
           <div className="flex items-center gap-4">
             <Link to="/auth" className="hidden md:flex">

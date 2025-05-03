@@ -71,14 +71,17 @@ export function setupAuth(app: Express) {
 
   app.post('/api/register', async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
+      // Remove confirmPassword from the request body
+      const { confirmPassword, ...userData } = req.body;
+      
+      const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: 'Username already exists' });
       }
 
       const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
+        ...userData,
+        password: await hashPassword(userData.password),
       });
 
       req.login(user, (err) => {
@@ -89,7 +92,7 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ message: 'Failed to register' });
+      res.status(400).json({ message: 'Registration failed', details: error.message });
     }
   });
 
