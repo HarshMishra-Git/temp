@@ -74,7 +74,21 @@ export default function AuthPage() {
     loginMutation.mutate(values);
   };
 
-  const onRegisterSubmit = (values: RegisterValues) => {
+  const onRegisterSubmit = async (values: RegisterValues) => {
+    if (!values.confirmPassword) {
+      registerForm.setError("confirmPassword", {
+        type: "required",
+        message: "Please confirm your password"
+      });
+      return;
+    }
+    if (values.password !== values.confirmPassword) {
+      registerForm.setError("confirmPassword", {
+        type: "validate",
+        message: "Passwords don't match"
+      });
+      return;
+    }
     // Remove confirmPassword before sending to API
     const { confirmPassword, ...registerData } = values;
     registerMutation.mutate(registerData);
