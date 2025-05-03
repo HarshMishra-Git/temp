@@ -1,6 +1,7 @@
 import { db } from "./index";
-import * as schema from "@shared/schema";
+import { users, modelMetrics, activityLogs, insertUserSchema, insertModelMetricsSchema, insertActivityLogSchema } from "@shared/schema";
 import { ActivityType } from "@/types";
+import { eq } from "drizzle-orm";
 
 async function seed() {
   try {
@@ -8,19 +9,20 @@ async function seed() {
     
     // Check if we already have a default user
     const existingUser = await db.query.users.findFirst({
-      where: (users) => users.username.equals("admin")
+      where: (users) => eq(users.username, "admin")
     });
     
     // Create default user if none exists
     if (!existingUser) {
       console.log("Creating default admin user...");
-      const [user] = await db.insert(schema.users).values({
+      const userData = insertUserSchema.parse({
         username: "admin",
         password: "$2b$10$8DmI1qQHL7JbnUa.BrGVPe2IfaApjhPB2jg3zKFcUzMfX9DSNv2eq", // hashed "password123"
         name: "Alex Torres",
         role: "admin",
         profileImage: "https://images.unsplash.com/photo-1553373875-200e034084af?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
-      }).returning();
+      });
+      const [user] = await db.insert(users).values(userData).returning();
       
       console.log(`Created user with ID: ${user.id}`);
     }
@@ -30,7 +32,7 @@ async function seed() {
     
     if (!existingMetrics) {
       console.log("Creating sample model metrics...");
-      await db.insert(schema.modelMetrics).values({
+      const metricsData = insertModelMetricsSchema.parse({
         overallMAP: 0.847,
         classMetrics: [
           {
@@ -66,6 +68,7 @@ async function seed() {
           "oxygen_tank_unusual_angle.jpg"
         ]
       });
+      await db.insert(modelMetrics).values(metricsData);
     }
     
     // Add sample activity logs if none exist
@@ -73,7 +76,7 @@ async function seed() {
     
     if (!existingLogs) {
       console.log("Creating sample activity logs...");
-      await db.insert(schema.activityLogs).values([
+      const activityData = [
         {
           type: ActivityType.DETECTION,
           title: "Space Station Module B Scan",
@@ -95,7 +98,11 @@ async function seed() {
           userId: 1,
           timestamp: new Date(Date.now() - 18000000) // 5 hours ago
         }
-      ]);
+      ];
+      
+      // Parse and validate each activity log
+      const validatedActivities = activityData.map(data => insertActivityLogSchema.parse(data));
+      await db.insert(activityLogs).values(validatedActivities);
     }
     
     console.log("Database seeding completed.");

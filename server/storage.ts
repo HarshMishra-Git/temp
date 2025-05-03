@@ -121,39 +121,51 @@ export const storage = {
   
   // Stats operations
   getStats: async () => {
-    // Get total number of detections
-    const detectionResultsCount = await db
-      .select({ count: count() })
-      .from(detectionResults);
-    
-    // Get latest model metrics for mAP
-    const latestMetrics = await db.query.modelMetrics.findMany({
-      orderBy: desc(modelMetrics.timestamp),
-      limit: 1
-    });
-    
-    // Calculate avg processing time
-    const avgProcessingTimeResult = await db
-      .select({ avg: avg(detectionResults.processingTimeMs) })
-      .from(detectionResults);
-    
-    // Get Fire Extinguisher accuracy from latest metrics
-    let fireExtinguisherAccuracy = 0;
-    if (latestMetrics.length > 0) {
-      const fireExtMetrics = latestMetrics[0].classMetrics.find(
-        (m) => m.className === "Fire Extinguisher"
-      );
-      if (fireExtMetrics) {
-        fireExtinguisherAccuracy = fireExtMetrics.precision * 100;
+    try {
+      // Use simple count query instead
+      const results = await db.query.detectionResults.findMany();
+      const totalDetections = results.length;
+      
+      // Get latest model metrics for mAP
+      const latestMetrics = await db.query.modelMetrics.findMany({
+        orderBy: desc(modelMetrics.timestamp),
+        limit: 1
+      });
+      
+      // Calculate avg processing time manually
+      let avgProcessingTime = 0;
+      if (results.length > 0) {
+        const totalTime = results.reduce((sum, result) => sum + (result.processingTimeMs || 0), 0);
+        avgProcessingTime = Math.round(totalTime / results.length);
       }
+      
+      // Get Fire Extinguisher accuracy from latest metrics
+      let fireExtinguisherAccuracy = 0;
+      if (latestMetrics.length > 0) {
+        const fireExtMetrics = latestMetrics[0].classMetrics.find(
+          (m) => m.className === "Fire Extinguisher"
+        );
+        if (fireExtMetrics) {
+          fireExtinguisherAccuracy = fireExtMetrics.precision * 100;
+        }
+      }
+      
+      return {
+        totalDetections,
+        mAP: latestMetrics.length > 0 ? latestMetrics[0].overallMAP * 100 : 0,
+        fireExtinguisherAccuracy,
+        avgProcessingTime
+      };
+    } catch (error) {
+      console.error('Error getting stats:', error);
+      // Return default values if there's an error
+      return {
+        totalDetections: 0,
+        mAP: 0,
+        fireExtinguisherAccuracy: 0,
+        avgProcessingTime: 0
+      };
     }
-    
-    return {
-      totalDetections: detectionResultsCount[0]?.count || 0,
-      mAP: latestMetrics.length > 0 ? latestMetrics[0].overallMAP * 100 : 0,
-      fireExtinguisherAccuracy,
-      avgProcessingTime: Math.round(avgProcessingTimeResult[0]?.avg || 0)
-    };
   }
 };
 
