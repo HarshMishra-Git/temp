@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
+import { setupAuth } from "./auth";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
@@ -88,6 +89,9 @@ const runDetection = async (imagePath: string): Promise<any> => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
+  
+  // Set up authentication
+  setupAuth(app);
   
   // Initialize uploads directory
   await createUploadsDir();

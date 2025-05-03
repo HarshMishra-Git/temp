@@ -7,9 +7,11 @@ import {
   insertDetectionResultSchema,
   insertModelMetricsSchema,
   insertActivityLogSchema,
+  insertUserSchema,
   InsertDetectionResult,
   InsertActivityLog,
-  InsertModelMetric
+  InsertModelMetric,
+  InsertUser
 } from "@shared/schema";
 import { eq, desc, and, or, like } from "drizzle-orm";
 
