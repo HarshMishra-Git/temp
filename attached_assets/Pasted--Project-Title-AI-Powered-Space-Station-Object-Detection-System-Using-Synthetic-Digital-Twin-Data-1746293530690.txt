@@ -1,0 +1,204 @@
+🚀 Project Title:
+AI-Powered Space Station Object Detection System Using Synthetic Digital Twin Data
+
+🎯 Project Objective:
+To build a full-stack application that enables users (astronauts/engineers) to upload space station images, detect critical objects (toolbox, oxygen tank, fire extinguisher), and view detection results, performance metrics, and analytics using a seamless web interface backed by a YOLOv8-based Python backend with AI logic running in a Jupyter Notebook.
+
+🧱 Tech Stack Overview
+🔵 Frontend:
+Framework: React.js or Next.js
+
+Styling: Tailwind CSS + Framer Motion for animations
+
+Features:
+
+Upload interface for space images
+
+Live visualization of detection results
+
+Toggle dark/light/system themes
+
+Admin dashboard to view logs, charts, mAP, confusion matrix
+
+🟢 Backend:
+Language: Python
+
+Framework: FastAPI
+
+Endpoints:
+
+/upload: Accepts image and triggers model prediction
+
+/results: Returns prediction data
+
+/metrics: Returns evaluation metrics from Jupyter Notebook
+
+/logs: Admin-only logs and analysis
+
+🟠 AI Model (Jupyter Notebook):
+YOLOv8 model (Ultralytics)
+
+Dataset processing
+
+Training, validation, mAP calculation
+
+Confusion matrix, failure analysis
+
+🔴 Database:
+MongoDB (or PostgreSQL if needed)
+
+Stores:
+
+Upload metadata
+
+Prediction results
+
+Performance metrics
+
+User logs
+
+🧠 AI/ML Model Details
+Model: YOLOv8 (multi-class object detection)
+
+Framework: Ultralytics + PyTorch
+
+Development Environment: Jupyter Notebook (for training, evaluation, experimentation)
+
+Dataset:
+
+Provided by Duality AI’s Falcon platform
+
+Categories: Toolbox, Oxygen Tank, Fire Extinguisher
+
+Already labeled in YOLO format
+
+Includes train/val/test folders and config files
+
+Metrics:
+
+mAP@0.5
+
+Confusion Matrix
+
+Failure case analysis
+
+📁 Directory Structure
+pgsql
+Copy
+Edit
+space-station-detection/
+│
+├── backend/
+│   ├── main.py (FastAPI)
+│   ├── utils.py (helper functions)
+│   └── model/
+│       ├── yolov8_weights.pt
+│       └── detect.py
+│
+├── frontend/
+│   └── (React or Next.js app)
+│       ├── components/
+│       ├── pages/
+│       └── styles/
+│
+├── database/
+│   └── schema.js or schema.sql
+│
+├── notebooks/
+│   └── object_detection.ipynb (Jupyter Notebook for training/evaluation)
+│
+├── dataset/
+│   └── Train/Val/Test folders from Falcon
+│
+├── env_setup/
+│   └── setup_env.bat
+│
+└── README.md
+🧪 How to Run the Project (Step-by-Step)
+🔹 Dataset Setup
+Create account on Falcon
+
+Download dataset with YOLO labels
+
+Place in dataset/ directory
+
+🔹 Model Training (Jupyter Notebook)
+Launch object_detection.ipynb in notebooks/
+
+Train YOLOv8 model using Train set
+
+Validate on Val set and export metrics
+
+Save trained weights as yolov8_weights.pt
+
+🔹 Backend Setup
+Install dependencies via env_setup/setup_env.bat
+
+Run FastAPI server:
+
+bash
+Copy
+Edit
+uvicorn main:app --reload
+🔹 Frontend Setup
+Navigate to frontend/ and run:
+
+bash
+Copy
+Edit
+npm install
+npm run dev
+🔹 Access Application
+Web UI: http://localhost:3000
+
+Backend API: http://localhost:8000
+
+📊 Admin Features
+View object detection logs
+
+Download prediction reports
+
+View training metrics (mAP, confusion matrix)
+
+View failure cases
+
+🎯 Evaluation Criteria (Hackathon-aligned)
+Criterion	Weight
+mAP@0.5 Score	80 points
+Documentation & Clarity	20 points
+
+✅ Deliverables
+Jupyter Notebook with:
+
+Dataset prep
+
+YOLOv8 training & validation
+
+Model optimization
+
+Performance evaluation
+
+Backend (Python FastAPI):
+
+Image handling, inference, metric API
+
+Frontend (React/Tailwind):
+
+Upload, result, and analytics dashboard
+
+Database:
+
+Predictions & logs
+
+Final Report:
+
+Confusion matrix
+
+Failure analysis
+
+Optimization techniques
+
+📌 Notes
+Include setup_env.bat from Falcon dataset for reproducibility
+
+Ensure deployment-readiness (can later host on AWS or Vercel)
