@@ -13,7 +13,8 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  Cell
 } from "recharts";
 
 export function PerformanceMetrics() {
