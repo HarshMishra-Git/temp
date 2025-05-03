@@ -103,6 +103,22 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs).pick({
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+// Auth-related schemas
+export const loginSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
+
+export const registerSchema = insertUserSchema.extend({
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters")
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+});
+
+export type LoginCredentials = z.infer<typeof loginSchema>;
+export type RegisterCredentials = z.infer<typeof registerSchema>;
+
 export type DetectionResult = typeof detectionResults.$inferSelect;
 export type InsertDetectionResult = z.infer<typeof insertDetectionResultSchema>;
 

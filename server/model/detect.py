@@ -32,6 +32,8 @@ def detect_objects(image_path, model_path=None, conf_thres=0.25, iou_thres=0.45,
     Returns:
         Dictionary with detection results
     """
+    # Note: Implementation updated based on the provided predict.py script
+    # Uses ultralytics YOLO for detection instead of custom implementation
     try:
         # Use default model path if not provided
         if model_path is None:

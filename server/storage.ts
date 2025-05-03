@@ -16,7 +16,17 @@ import { eq, desc, and, or, like } from "drizzle-orm";
 // Storage interface for database operations
 export const storage = {
   // User operations
-  getUserById: async (id: number) => {
+  createUser: async (userData: Omit<InsertUser, "id">) => {
+    try {
+      const [user] = await db.insert(users).values(userData).returning();
+      return user;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  },
+  
+  getUser: async (id: number) => {
     return await db.query.users.findFirst({
       where: eq(users.id, id)
     });
