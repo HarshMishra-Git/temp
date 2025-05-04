@@ -343,10 +343,40 @@ export default function Settings() {
                         <Input id="role" defaultValue="Engineer" disabled />
                       </div>
                       
-                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <Button variant="destructive">
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full"
+                          onClick={() => {
+                            const newName = window.prompt("Enter new name:", user?.name);
+                            if (newName) {
+                              // Add API call to update name
+                            }
+                          }}
+                        >
+                          Edit Profile
+                        </Button>
+                      </div>
+                      
+                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                        <Button 
+                          className="w-full" 
+                          onClick={() => logoutMutation.mutate()}
+                        >
                           <i className="ri-logout-box-r-line mr-2"></i>
                           Sign Out
+                        </Button>
+                        
+                        <Button 
+                          variant="destructive" 
+                          className="w-full"
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                              // Add API call to delete account
+                            }
+                          }}
+                        >
+                          <i className="ri-delete-bin-line mr-2"></i>
+                          Delete Account
                         </Button>
                       </div>
                     </div>

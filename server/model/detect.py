@@ -38,6 +38,9 @@ def detect_objects(image_path, model_path=None, conf_thres=0.25, iou_thres=0.45,
         # Use default model path if not provided
         if model_path is None:
             model_path = os.path.join(current_dir, 'yolov8_weights.pt')
+            if not os.path.exists(model_path):
+                print(f"Downloading YOLOv8 weights to {model_path}")
+                os.system(f"curl -L https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt -o {model_path}")
         
         # Load model
         model = load_model(model_path)

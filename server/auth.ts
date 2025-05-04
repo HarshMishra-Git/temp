@@ -129,4 +129,28 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user as any;
     res.json(userWithoutPassword);
   });
+
+  app.put('/api/user', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      const updatedUser = await storage.updateUser(req.user.id, req.body);
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update user' });
+    }
+  });
+
+  app.delete('/api/user', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      await storage.deleteUser(req.user.id);
+      req.logout((err) => {
+        if (err) return res.status(500).json({ message: 'Logout failed' });
+        res.json({ message: 'Account deleted successfully' });
+      });
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete account' });
+    }
+  });
 }

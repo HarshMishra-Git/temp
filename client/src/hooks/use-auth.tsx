@@ -96,11 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return await res.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: () => {
       toast({
         title: "Registration successful",
-        description: `Welcome, ${user.name}!`,
+        description: "Please login with your credentials",
       });
     },
     onError: (error: Error) => {
